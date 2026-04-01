@@ -3,6 +3,10 @@ package com.example.demo.entities;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author aberrahimchikhi
+ */
 @Entity
 @Table(name = "customers")
 public class Customer {

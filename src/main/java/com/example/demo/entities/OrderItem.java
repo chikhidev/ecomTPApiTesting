@@ -3,6 +3,10 @@ package com.example.demo.entities;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+/**
+ *
+ * @author aberrahimchikhi
+ */
 @Entity
 @Table(name = "order_items")
 public class OrderItem {

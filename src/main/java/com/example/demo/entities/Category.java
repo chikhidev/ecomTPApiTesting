@@ -3,6 +3,10 @@ package com.example.demo.entities;
 import jakarta.persistence.*;
 import java.util.List;
 
+/**
+ *
+ * @author aberrahimchikhi
+ */
 @Entity
 @Table(name = "categories")
 public class Category {
