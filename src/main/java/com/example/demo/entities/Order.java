@@ -25,6 +25,7 @@ public class Order {
     @Column(updatable = false)
     private LocalDateTime orderDate;
 
+    @Column(name="total_amount")
     private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)

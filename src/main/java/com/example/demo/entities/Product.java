@@ -23,10 +23,10 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name="stock_quantity")
     private Integer stockQuantity;
 
-    @Column(updatable = false)
+    @Column(updatable = false, name="created_at")
     private LocalDateTime createdAt;
 
     @ManyToOne

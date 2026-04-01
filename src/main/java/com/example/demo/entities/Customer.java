@@ -14,10 +14,10 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name="first_name")
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name="last_name")
     private String lastName;
 
     @Column(nullable = false, unique = true)
@@ -25,7 +25,7 @@ public class Customer {
 
     private String phone;
 
-    @Column(updatable = false)
+    @Column(updatable = false, name="created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

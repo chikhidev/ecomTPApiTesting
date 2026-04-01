@@ -3,8 +3,8 @@ package com.example.demo.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.entities.Product;
-import com.example.demo.services.ProductService;
+import com.example.demo.entities.Customer;
+import com.example.demo.services.CustomerService;
 
 import java.rmi.UnexpectedException;
 import java.util.List;
@@ -21,59 +21,59 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * REST Controller for Product CRUD operations
+ * REST Controller for Customer CRUD operations
  * @author aberrahimchikhi
  */
 @RestController
-@RequestMapping("products")
-public class ProductController {
+@RequestMapping("customers")
+public class CustomerController {
 
-    final private ProductService productService;
+    final private CustomerService customerService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
     }
 
     @GetMapping()
-    public List<Product> getAllProducts() {
-        return this.productService.getAll();
+    public List<Customer> getAllCustomers() {
+        return this.customerService.getAll();
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) throws NotFoundException {
-        Product product = this.productService.findById(id);
-        return ResponseEntity.status(200).body(product);
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) throws NotFoundException {
+        Customer customer = this.customerService.findById(id);
+        return ResponseEntity.status(200).body(customer);
     }
 
     @PostMapping()
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product created = this.productService.create(product);
+    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
+        Customer created = this.customerService.create(customer);
 
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product payload)
+    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @RequestBody Customer payload)
             throws NotFoundException
     {
-        Product updated = this.productService.update(id, payload);
+        Customer updated = this.customerService.update(id, payload);
         return ResponseEntity.status(200).body(updated);
     }
 
     @PatchMapping("{id}")
-    public ResponseEntity<Product> updatePartialProduct(@PathVariable Long id, @RequestBody Product payload)
+    public ResponseEntity<Customer> updatePartialCustomer(@PathVariable Long id, @RequestBody Customer payload)
             throws NotFoundException
     {
-        Product updated = this.productService.update(id, payload);
+        Customer updated = this.customerService.update(id, payload);
         return ResponseEntity.status(200).body(updated);
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Product> deleteProduct(@PathVariable Long id)
+    public ResponseEntity<Customer> deleteCustomer(@PathVariable Long id)
             throws NotFoundException, UnexpectedException
     {
 
-        this.productService.delete(id);
+        this.customerService.delete(id);
         return ResponseEntity.status(204).build();
     }
 
@@ -81,7 +81,7 @@ public class ProductController {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleException(NotFoundException ex) {
-        return ResponseEntity.status(404).body("Could not find this product");
+        return ResponseEntity.status(404).body("Could not find this customer");
     }
 
     @ExceptionHandler(Exception.class)
