@@ -3,6 +3,7 @@ package com.example.demo.entities;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  *
@@ -29,8 +30,10 @@ public class Product {
     @Column(updatable = false, name="created_at")
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    // @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "category_id")
+    @JsonBackReference("category-products")
     private Category category;
 
     @PrePersist

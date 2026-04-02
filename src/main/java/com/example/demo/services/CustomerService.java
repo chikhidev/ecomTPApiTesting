@@ -35,6 +35,10 @@ public class CustomerService {
         throw new NotFoundException();
     }
 
+    public List<Customer> findByEmail(String email) {
+        return this.customerRepo.findByEmail(email);
+    }
+
     public Customer create(Customer customer) {
         return this.customerRepo.save(customer);
     }
@@ -43,7 +47,7 @@ public class CustomerService {
         Optional<Customer> found = this.customerRepo.findById(id);
 
         if (found.isPresent()) {
-            BeanUtils.copyProperties(customer, found.get());
+            BeanUtils.copyProperties(customer, found.get(), "id", "createdAt");
 
             return this.customerRepo.save(found.get());
         }

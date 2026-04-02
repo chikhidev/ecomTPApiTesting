@@ -4,9 +4,9 @@ import java.rmi.UnexpectedException;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entities.Order;
 import com.example.demo.entities.OrderItem;
@@ -40,55 +40,56 @@ public class OrderService {
         throw new NotFoundException();
     }
 
-    public Order create(Order order) throws IllegalArgumentException, UnexpectedException, NotFoundException {
-        try {
-            if (order.getOrderItems() != null) {
-                for (OrderItem item : order.getOrderItems()) {
-                    Product product = item.getProduct();
-                    if (product == null) {
-                        throw new IllegalArgumentException("Order item must contain a valid product");
-                    }
-
-                    Optional<Product> productOpt = this.productRepo.findById(product.getId());
-                    if (productOpt.isEmpty()) {
-                        throw new NotFoundException();
-                    }
-
-                    Product dbProduct = productOpt.get();
-                    if (dbProduct.getStockQuantity() < item.getQuantity()) {
-                        throw new IllegalArgumentException(
-                            "Insufficient stock for product: " + dbProduct.getName() + 
-                            ". Available: " + dbProduct.getStockQuantity() + 
-                            ", Requested: " + item.getQuantity()
-                        );
-                    }
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NotFoundException.class})
+    public Order create(Order order) throws IllegalArgumentException, NotFoundException {
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                if (product == null) {
+                    throw new IllegalArgumentException("Order item must contain a valid product");
                 }
-            }
 
-            if (order.getStatus() == null) {
-                order.setStatus(Order.OrderStatus.PENDING);
-            }
-
-            order.calculateTotal();
-
-            Order savedOrder = this.orderRepo.save(order);
-
-            if (savedOrder.getOrderItems() != null) {
-                for (OrderItem item : savedOrder.getOrderItems()) {
-                    Product product = this.productRepo.findById(item.getProduct().getId()).get();
-                    product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-                    this.productRepo.save(product);
+                if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                    throw new IllegalArgumentException("Order item quantity must be greater than 0");
                 }
-            }
 
-            return savedOrder;
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new UnexpectedException("Error creating order: " + e.getMessage());
+                Optional<Product> productOpt = this.productRepo.findById(product.getId());
+                if (productOpt.isEmpty()) {
+                    throw new NotFoundException();
+                }
+
+                Product dbProduct = productOpt.get();
+                if (dbProduct.getStockQuantity() < item.getQuantity()) {
+                    throw new IllegalArgumentException(
+                        "Insufficient stock for product: " + dbProduct.getName() + 
+                        ". Available: " + dbProduct.getStockQuantity() + 
+                        ", Requested: " + item.getQuantity()
+                    );
+                }
+                
+                item.setProduct(dbProduct);
+                item.setPrice(dbProduct.getPrice());
+                item.setOrder(order);
+            }
         }
+
+        if (order.getStatus() == null) {
+            order.setStatus(Order.OrderStatus.PENDING);
+        }
+
+        order.calculateTotal();
+
+        Order savedOrder = this.orderRepo.save(order);
+
+        if (savedOrder.getOrderItems() != null) {
+            for (OrderItem item : savedOrder.getOrderItems()) {
+                Product product = this.productRepo.findById(item.getProduct().getId()).get();
+                product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+                this.productRepo.save(product);
+            }
+        }
+
+        return savedOrder;
     }
 
     public Order update(Long id, Order orderUpdate) throws NotFoundException {

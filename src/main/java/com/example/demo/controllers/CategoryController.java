@@ -7,6 +7,7 @@ import com.example.demo.entities.Category;
 import com.example.demo.services.CategoryService;
 
 import java.rmi.UnexpectedException;
+import java.security.InvalidParameterException;
 import java.util.List;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -46,7 +47,12 @@ public class CategoryController {
     }
 
     @PostMapping()
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<Category> createCategory(@RequestBody Category category)
+        throws InvalidParameterException    
+    {
+        if (category.getId() != null) throw new InvalidParameterException("ID must not be provided on creation");
+        if (category.getName() == null || category.getName().length() == 0) throw new InvalidParameterException("Invalid category name");
+
         Category created = this.categoryService.create(category);
 
         return ResponseEntity.status(201).body(created);
@@ -54,8 +60,10 @@ public class CategoryController {
 
     @PutMapping("{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category payload)
-            throws NotFoundException
+            throws NotFoundException, InvalidParameterException
     {
+        if (payload.getName() == null || payload.getName().length() == 0) throw new InvalidParameterException("Invalid category name");
+
         Category updated = this.categoryService.update(id, payload);
         return ResponseEntity.status(200).body(updated);
     }
@@ -81,7 +89,12 @@ public class CategoryController {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleException(NotFoundException ex) {
-        return ResponseEntity.status(404).body("Could not find this category");
+        return ResponseEntity.status(404).body("NOT FOUND");
+    }
+
+    @ExceptionHandler(InvalidParameterException.class)
+    public ResponseEntity<String> handleInvalidParam(InvalidParameterException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

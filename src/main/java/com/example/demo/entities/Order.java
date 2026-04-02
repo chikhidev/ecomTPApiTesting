@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  *
@@ -32,6 +33,7 @@ public class Order {
     private OrderStatus status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference("order-items")
     private List<OrderItem> orderItems;
 
     @PrePersist

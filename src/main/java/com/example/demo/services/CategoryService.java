@@ -43,7 +43,7 @@ public class CategoryService {
         Optional<Category> found = this.categoryRepo.findById(id);
 
         if (found.isPresent()) {
-            BeanUtils.copyProperties(category, found.get());
+            BeanUtils.copyProperties(category, found.get(), "id", "createdAt");
 
             return this.categoryRepo.save(found.get());
         }

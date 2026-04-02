@@ -22,10 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * REST Controller for Order CRUD operations
- * Implements business logic for order management:
- * - Stock validation and management
- * - Order status handling
- * - Total amount calculation
  * @author aberrahimchikhi
  */
 @RestController
@@ -52,6 +48,7 @@ public class OrderController {
     @PostMapping()
     public ResponseEntity<Order> createOrder(@RequestBody Order order) 
             throws IllegalArgumentException, UnexpectedException, NotFoundException {
+        if (order.getId() != null) throw new IllegalArgumentException("ID must not be provided on creation");
         Order created = this.orderService.create(order);
 
         return ResponseEntity.status(201).body(created);
@@ -77,6 +74,9 @@ public class OrderController {
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id, @RequestBody StatusUpdate statusUpdate)
             throws NotFoundException, IllegalArgumentException
     {
+        if (statusUpdate.status == null || statusUpdate.status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status must be provided. Valid values: PENDING, COMPLETED, CANCELLED");
+        }
         try {
             Order.OrderStatus status = Order.OrderStatus.valueOf(statusUpdate.status.toUpperCase());
             Order updated = this.orderService.updateStatus(id, status);
@@ -99,7 +99,7 @@ public class OrderController {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
-        return ResponseEntity.status(404).body("Could not find this order");
+        return ResponseEntity.status(404).body("NOT FOUND");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -117,7 +117,7 @@ public class OrderController {
 
 
 
-    
+
     public static class StatusUpdate {
         public String status;
 

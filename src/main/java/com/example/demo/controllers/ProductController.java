@@ -4,9 +4,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entities.Product;
+import com.example.demo.services.CategoryService;
 import com.example.demo.services.ProductService;
+import com.example.demo.entities.Category;
 
+import java.math.BigDecimal;
 import java.rmi.UnexpectedException;
+import java.security.InvalidParameterException;
 import java.util.List;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -29,9 +33,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class ProductController {
 
     final private ProductService productService;
+    final private CategoryService categoryService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping()
@@ -46,7 +52,14 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@RequestBody Product product)
+        throws InvalidParameterException, NotFoundException
+    {
+        if (product.getId() != null) throw new InvalidParameterException("ID must not be provided on creation");
+        if (product.getName() == null || product.getName().length() == 0) throw new InvalidParameterException("Invalid name");
+        if (product.getPrice().compareTo(BigDecimal.ZERO) <= 0) throw new InvalidParameterException("Invalid price");
+        if (product.getStockQuantity() <= 0) throw new InvalidParameterException("Invalid stock");
+
         Product created = this.productService.create(product);
 
         return ResponseEntity.status(201).body(created);
@@ -56,6 +69,10 @@ public class ProductController {
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product payload)
             throws NotFoundException
     {
+        if (payload.getName() == null || payload.getName().length() == 0) throw new InvalidParameterException("Invalid name");
+        if (payload.getPrice().compareTo(BigDecimal.ZERO) <= 0) throw new InvalidParameterException("Invalid price");
+        if (payload.getStockQuantity() <= 0) throw new InvalidParameterException("Invalid stock");
+
         Product updated = this.productService.update(id, payload);
         return ResponseEntity.status(200).body(updated);
     }
@@ -64,6 +81,11 @@ public class ProductController {
     public ResponseEntity<Product> updatePartialProduct(@PathVariable Long id, @RequestBody Product payload)
             throws NotFoundException
     {
+        if (payload.getCategory() != null && payload.getCategory().getId() != null) {
+            Category dbCategory = this.categoryService.findById(payload.getCategory().getId());
+            payload.setCategory(dbCategory);
+        }
+
         Product updated = this.productService.update(id, payload);
         return ResponseEntity.status(200).body(updated);
     }
@@ -81,7 +103,12 @@ public class ProductController {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleException(NotFoundException ex) {
-        return ResponseEntity.status(404).body("Could not find this product");
+        return ResponseEntity.status(404).body("NOT FOUND");
+    }
+
+    @ExceptionHandler(InvalidParameterException.class)
+    public ResponseEntity<String> handleInvalidParam(InvalidParameterException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

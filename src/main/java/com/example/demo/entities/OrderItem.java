@@ -2,6 +2,8 @@ package com.example.demo.entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  *
@@ -16,6 +18,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference("order-items")
     private Order order;
 
     @ManyToOne
@@ -26,6 +29,7 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal price;
 
     public OrderItem() {}

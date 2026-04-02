@@ -10,4 +10,5 @@ import com.example.demo.entities.Category;
  * @author aberrahimchikhi
  */
 @Repository
-public interface CategoryRepo extends JpaRepository<Category, Long> {}
+public interface CategoryRepo extends JpaRepository<Category, Long> {
+}

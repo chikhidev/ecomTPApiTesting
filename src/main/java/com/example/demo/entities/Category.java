@@ -2,6 +2,7 @@ package com.example.demo.entities;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  *
@@ -20,6 +21,7 @@ public class Category {
     private String description;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonManagedReference("category-products")
     private List<Product> products;
 
     public Category() {}
